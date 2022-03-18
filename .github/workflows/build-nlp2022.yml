@@ -15,7 +15,7 @@ jobs:
       with:
         node-version: '16.14.0'
     - name: Install npm dependencies and build
-      run: cd site/Nlp-2022 && npm install && npm run build  && cd build && ls && pwd
+      run: npm install && npm run build 
     - name: Deploy github page
       uses: peaceiris/actions-gh-pages@v3
       with:
