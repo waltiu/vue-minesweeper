@@ -2,7 +2,7 @@
 export const  X_Length=5
 export const  Y_Length=5
 
-export const  MINE_RATE=0.4  // 炸弹的概率
+export const  MINE_RATE=0.2  // 炸弹的概率
 
 export const SIBLING_POSITIONS=[
     [1, 1],

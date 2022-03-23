@@ -1,88 +1,99 @@
 <script setup>
-import { watchEffect, ref,isRef,reactive  } from "vue";
+import {  reactive, isReactive } from "vue";
 import {
   X_Length,
   Y_Length,
   MINE_RATE,
   getSiblingBlock,
 } from "./components/constant";
-let blocks = ref([]);
-console.log(blocks,'block')
+
+let hasInitBombs=false
+
 const initBlocks = () => {
-  blocks.value = Array.from({ length: X_Length }, (_, x) =>
+  return Array.from({ length: X_Length }, (_, x) =>
     Array.from({ length: Y_Length }, (_, y) => ({
       y,
       x,
-      value: 0,
-      isBomb: false, 
-      isCovered:true
+      number: 0,
+      isBomb: false,
+      isCovered: true,
     }))
   );
-  console.log(blocks, "blocks");
 };
+let blocks = reactive(initBlocks());
 
-const generateMines = () => {
-  blocks.value  = blocks.value .map((raw) => {
-    return raw.map((block) => {
-      return {
-        ...block,
-        isBomb: Math.random() < MINE_RATE,
-      };
-    });
+const generateBombs = () => {
+  blocks.flat().forEach((block) => {
+    block.isBomb = Math.random() < MINE_RATE;
   });
 };
 
 const generateNumber = () => {
-  blocks.value  = blocks.value .map((raw) => {
-    return raw.map((block) => {
-      let value = 0;
-      if (!block.isBomb) {
-        getSiblingBlock(blocks.value, block).forEach((item) => {
-          if (item.isBomb) {
-            value = value  + 1;
-          }
-        });
+  blocks.flat().forEach((block) => {
+    let number = 0;
+    getSiblingBlock(blocks, block).forEach((item) => {
+      if (item.isBomb) {
+        number = number + 1;
       }
-      return {
-        ...block,
-        value,
-      };
     });
+    block.number = number;
   });
 };
 
 const getBlockStyles = (block) => {
-  if(!block.isCovered){
+  if (!block.isCovered) {
     return {
-          backgroundColor: "gray",
-    }
+      backgroundColor: "gray",
+    };
   }
   return {
     backgroundColor: "gray",
-    color:"gray"
+    color: "gray",
   };
 };
 
- const clickBlock =(block)=>{
-  if(block.isBomb){
-    alert('you has been die ! ')
+const clickBlock = (block) => {
+  if(!hasInitBombs){
+    generateBombs();
+    generateNumber();
+    hasInitBombs=true
   }
-  blocks.value [block.x][block.y].isCovered=false
+  if (block.isBomb) {
+    alert("you has been die ! ");
+  }
+  if(block.value==0&&!hasInitBombs){
+    getSiblingBlock()
+  }
+  coverBlock(block)
+};
+
+const coverBlock=(block)=>{
+  if(block.number===0&&hasInitBombs){
+    console.log(getSiblingBlock(blocks,block))
+    getSiblingBlock(blocks,block).forEach(item=>{
+      if(item.number===0){
+        coverBlock(item)
+      }
+    })
+  }
+  if(block.isCovered){
+    blocks[block.x][block.y].isCovered = false;
+  }
 }
 
-console.log(isRef(blocks))
-initBlocks();
-generateMines();
-generateNumber();
-console.log(blocks, "blocks");
 </script>
 
 <template>
   <div class="mines-sweeper">
     <div v-for="raw of blocks" class="raw">
-      <div v-for="block of raw" class="block" :style="getBlockStyles(block)" @click="clickBlock(block)">
-        <div v-if="block.isBomb">炸弹</div>
-        <div v-else>{{ block.isCovered }}</div>
+      <div
+        v-for="block of raw"
+        class="block"
+        :style="getBlockStyles(block)"
+        @click="clickBlock(block)"
+      >
+        <div v-if="block.isBomb">炸</div>
+        <div v-else>{{ block.number }}</div>
       </div>
     </div>
   </div>
