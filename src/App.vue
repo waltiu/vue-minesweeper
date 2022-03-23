@@ -1,21 +1,40 @@
-<script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
+<script setup >
+import { watchEffect, reactive } from "vue";
+import { xLength, yLength } from "./components/constant";
+let blocks=[]
+const initBlocks = () => {
+   blocks = Array.from({ length: xLength }, (_,x) =>
+    Array.from({ length: yLength },(_,y)=>({
+      y,
+      x,
+      value:0
+    }))
+  );
+  console.log(blocks,'blocks');
+};
+
+initBlocks();
+console.log(blocks,'blocks')
 </script>
 
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + Vite" />
+  <div class="mines-sweeper">
+    <div v-for="raw of blocks " class="raw">
+        <span v-for="block of raw" class="block">
+        {{block.x}}:{{block.y}}
+        </span>
+    </div>
+  </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="scss">
+.mines-sweeper {
+  .raw{
+    margin: 12px;
+  }
+  .block{
+    margin: 8px;
+  }
 }
+
 </style>
