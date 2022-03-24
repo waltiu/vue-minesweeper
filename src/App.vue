@@ -1,5 +1,5 @@
 <script setup>
-import {  reactive, isReactive } from "vue";
+import { reactive, isReactive } from "vue";
 import {
   X_Length,
   Y_Length,
@@ -7,80 +7,85 @@ import {
   getSiblingBlock,
 } from "./components/constant";
 
-let hasInitBombs=false
+let hasInitBombs = false;
 
 const initBlocks = () => {
   return Array.from({ length: X_Length }, (_, x) =>
     Array.from({ length: Y_Length }, (_, y) => ({
       y,
       x,
-      number: 0,
-      isBomb: false,
-      isCovered: true,
+      aroundBomb: 0,  // 周围炸弹数
+      isBomb: false,  // 是否是炸弹
+      isCovered: true, // 未被揭开
     }))
   );
 };
 let blocks = reactive(initBlocks());
 
-const generateBombs = () => {
+const generateBombs = (firstBlock) => {
   blocks.flat().forEach((block) => {
+    // 第一次点击，炸弹必在1m远外
+    if (
+      Math.abs(firstBlock.x - block.x) > 1 &&
+      Math.abs(firstBlock.y - block.y) > 1
+    ) {
+      return "";
+    }
     block.isBomb = Math.random() < MINE_RATE;
   });
 };
 
 const generateNumber = () => {
   blocks.flat().forEach((block) => {
-    let number = 0;
+    let aroundBomb = 0;
     getSiblingBlock(blocks, block).forEach((item) => {
       if (item.isBomb) {
-        number = number + 1;
+        aroundBomb = aroundBomb + 1;
       }
     });
-    block.number = number;
+    block.aroundBomb = aroundBomb;
   });
 };
 
 const getBlockStyles = (block) => {
   if (!block.isCovered) {
     return {
-      backgroundColor: "gray",
+      color: "red",
     };
   }
   return {
     backgroundColor: "gray",
-    color: "gray",
+    // color: "gray",
   };
 };
 
 const clickBlock = (block) => {
-  if(!hasInitBombs){
-    generateBombs();
-    generateNumber();
-    hasInitBombs=true
-  }
   if (block.isBomb) {
     alert("you has been die ! ");
+    return "";
   }
-  if(block.value==0&&!hasInitBombs){
-    getSiblingBlock()
+  if (!hasInitBombs) {
+    generateBombs(block);
+    generateNumber();
+    hasInitBombs = true;
   }
-  coverBlock(block)
+  coverBlock(block);
 };
 
-const coverBlock=(block)=>{
-  if(block.number===0&&hasInitBombs){
-    console.log(getSiblingBlock(blocks,block))
-    getSiblingBlock(blocks,block).forEach(item=>{
-      if(item.number===0){
-        coverBlock(item)
-      }
-    })
+const coverBlock = (block) => {
+  if (block.aroundBomb) {
+    return "";
   }
-  if(block.isCovered){
+  if (block.isCovered) {
     blocks[block.x][block.y].isCovered = false;
   }
-}
-
+  getSiblingBlock(blocks, block).forEach((item) => {
+    console.log(getSiblingBlock(blocks, block), "sibling");
+    if (item.isCovered) {
+      coverBlock(item);
+    }
+  });
+};
 </script>
 
 <template>
@@ -93,7 +98,7 @@ const coverBlock=(block)=>{
         @click="clickBlock(block)"
       >
         <div v-if="block.isBomb">炸</div>
-        <div v-else>{{ block.number }}</div>
+        <div v-else>{{ block.aroundBomb }}</div>
       </div>
     </div>
   </div>
