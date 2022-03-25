@@ -1,105 +1,23 @@
 <script setup>
-import { reactive, isReactive } from "vue";
-import {
-  X_Length,
-  Y_Length,
-  MINE_RATE,
-  getSiblingBlock,
-} from "./components/constant";
+import { toRefs, watchEffect } from "vue";
+import { GamePlay } from "./components/GamePlay";
+import BlockItem from "./components/BlockItem.vue";
 
-let hasInitBombs = false;
-
-const initBlocks = () => {
-  return Array.from({ length: X_Length }, (_, x) =>
-    Array.from({ length: Y_Length }, (_, y) => ({
-      y,
-      x,
-      aroundBomb: 0,  // 周围炸弹数
-      isBomb: false,  // 是否是炸弹
-      isCovered: true, // 未被揭开
-    }))
-  );
-};
-let blocks = reactive(initBlocks());
-
-const generateBombs = (firstBlock) => {
-  blocks.flat().forEach((block) => {
-    // 第一次点击，炸弹必在1m远外
-    if (
-      Math.abs(firstBlock.x - block.x) > 1 &&
-      Math.abs(firstBlock.y - block.y) > 1
-    ) {
-      return "";
-    }
-    block.isBomb = Math.random() < MINE_RATE;
-  });
-};
-
-const generateNumber = () => {
-  blocks.flat().forEach((block) => {
-    let aroundBomb = 0;
-    getSiblingBlock(blocks, block).forEach((item) => {
-      if (item.isBomb) {
-        aroundBomb = aroundBomb + 1;
-      }
-    });
-    block.aroundBomb = aroundBomb;
-  });
-};
-
-const getBlockStyles = (block) => {
-  if (!block.isCovered) {
-    return {
-      color: "red",
-    };
-  }
-  return {
-    backgroundColor: "gray",
-    // color: "gray",
-  };
-};
-
-const clickBlock = (block) => {
-  if (block.isBomb) {
-    alert("you has been die ! ");
-    return "";
-  }
-  if (!hasInitBombs) {
-    generateBombs(block);
-    generateNumber();
-    hasInitBombs = true;
-  }
-  coverBlock(block);
-};
-
-const coverBlock = (block) => {
-  if (block.aroundBomb) {
-    return "";
-  }
-  if (block.isCovered) {
-    blocks[block.x][block.y].isCovered = false;
-  }
-  getSiblingBlock(blocks, block).forEach((item) => {
-    console.log(getSiblingBlock(blocks, block), "sibling");
-    if (item.isCovered) {
-      coverBlock(item);
-    }
-  });
-};
+const newGame = new GamePlay(10, 10);
+const { blocks } = toRefs(newGame.blockState);
+watchEffect(() => newGame.watchGameState());
 </script>
 
 <template>
   <div class="mines-sweeper">
     <div v-for="raw of blocks" class="raw">
-      <div
-        v-for="block of raw"
-        class="block"
-        :style="getBlockStyles(block)"
-        @click="clickBlock(block)"
-      >
-        <div v-if="block.isBomb">炸</div>
-        <div v-else>{{ block.aroundBomb }}</div>
-      </div>
+      <template v-for="block of raw">
+        <BlockItem
+          :block="block"
+          @click="newGame.leftClickBlock(block)"
+          @click.right.prevent="newGame.rightClickBlock(block)"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -120,6 +38,22 @@ const coverBlock = (block) => {
     width: 20px;
     height: 20px;
     text-align: center;
+    background-color: rgba(107, 114, 128, 0.1);
+    &:hover {
+      background-color: rgba(107, 114, 128, 0.2);
+    }
+    > div {
+      width: 100%;
+      height: 100%;
+    }
+    .flag {
+      background: url("https://api.iconify.design/ph:flag-checkered-fill.svg?color=%2339aec6")
+        no-repeat center center / contain;
+    }
+    .bomb {
+      background: url("https://api.iconify.design/noto:bomb.svg?color=%23cc4f33")
+        no-repeat center center / contain;
+    }
   }
 }
 </style>
