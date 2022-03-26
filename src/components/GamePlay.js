@@ -4,12 +4,15 @@ export class GamePlay {
   blockState = reactive({
     blocks: [],
     hasInitBombs: false,
+    bombs:0
   });
-  constructor(width, height) {
+  constructor(width, height,bombs) {
     (this.width = width), (this.height = height);
+    this.bombs=bombs
     this.start();
   }
   start() {
+    this.blockState.hasInitBombs=false
     this.blockState.blocks = Array.from({ length: this.width }, (_, x) =>
       Array.from({ length: this.height }, (_, y) => ({
         y,

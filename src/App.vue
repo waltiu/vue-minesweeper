@@ -10,6 +10,10 @@ watchEffect(() => newGame.watchGameState());
 
 <template>
   <div class="mines-sweeper">
+<div class="oper">
+  <div @click="newGame.start()">reset</div>
+</div>
+
     <div v-for="raw of blocks" class="raw">
       <template v-for="block of raw">
         <BlockItem
@@ -24,6 +28,10 @@ watchEffect(() => newGame.watchGameState());
 
 <style lang="scss">
 .mines-sweeper {
+  text-align: center;
+  .oper{
+
+  }
   .raw {
     margin: 12px;
     display: flex;
