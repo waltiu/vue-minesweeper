@@ -1,21 +1,64 @@
 <script setup>
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
+import { toRefs, watchEffect } from "vue";
+import { GamePlay } from "./components/GamePlay";
+import BlockItem from "./components/BlockItem.vue";
+import { X_Length,Y_Length } from "./components/constant";
+const newGame = new GamePlay(X_Length,Y_Length);
+const { blocks,bombs } = toRefs(newGame.blockState);
+watchEffect(() => newGame.watchGameState());
 </script>
 
+
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + Vite" />
+  <div class="mines-sweeper">
+    <div class="oper">
+      <div @click="newGame.start()">
+      <button>
+        reset
+      </button></div>
+      <div>炸弹数:{{bombs}}</div>
+    </div>
+
+    <div class="mine">
+      <div v-for="raw of blocks" class="raw">
+        <template v-for="block of raw">
+          <BlockItem
+            :block="block"
+            @click="newGame.leftClickBlock(block)"
+            @click.right.prevent="newGame.rightClickBlock(block)"
+            @dblclick="newGame.rightClickBlock(block)"
+          />
+        </template>
+      </div>
+    </div>
+  </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="scss">
+.mines-sweeper {
+  width: 100%;
+
+  .oper {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    >div{
+      margin-right: 24px;
+    }
+  }
+  .mine {
+    overflow: auto;
+    width: 100%;
+
+    .raw {
+      display: flex;
+      justify-content: center;
+      display: flex;
+      align-items: center;
+    }
+  }
 }
 </style>
