@@ -2,8 +2,8 @@
 import { toRefs, watchEffect } from "vue";
 import { GamePlay } from "./components/GamePlay";
 import BlockItem from "./components/BlockItem.vue";
-
-const newGame = new GamePlay(10,10);
+import { X_Length,Y_Length } from "./components/constant";
+const newGame = new GamePlay(X_Length,Y_Length);
 const { blocks,bombs } = toRefs(newGame.blockState);
 watchEffect(() => newGame.watchGameState());
 </script>

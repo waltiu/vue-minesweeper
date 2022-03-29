@@ -1,5 +1,5 @@
-export const X_Length = 10;
-export const Y_Length = 10;
+export const X_Length = 6;
+export const Y_Length = 6;
 
 export const MINE_RATE = 0.2; // 炸弹的概率
 
@@ -24,7 +24,7 @@ export const getSiblingBlock = (blocks, block) => {
   return SIBLING_POSITIONS.map(([x, y]) => {
     const x1 = block.x + x;
     const y1 = block.y + y;
-    return isCorrectPosition(x1, y1) ? blocks[x1][y1] : null;
+    return isCorrectPosition(x1, y1) ? blocks[x1][y1]||null : null;
   }).filter(Boolean);
 };
 

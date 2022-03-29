@@ -1,5 +1,5 @@
 import { reactive, ref, watchEffect } from "vue";
-import { getSiblingBlock, MINE_RATE,X_Length, Y_Length } from "./constant";
+import { getSiblingBlock, MINE_RATE } from "./constant";
 export class GamePlay {
   blockState = reactive({
     blocks: [],
