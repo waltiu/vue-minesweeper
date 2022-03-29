@@ -1,18 +1,17 @@
-import { reactive, ref,watchEffect } from "vue";
-import { getSiblingBlock,MINE_RATE  } from "./constant";
+import { reactive, ref, watchEffect } from "vue";
+import { getSiblingBlock, MINE_RATE,X_Length, Y_Length } from "./constant";
 export class GamePlay {
   blockState = reactive({
     blocks: [],
     hasInitBombs: false,
-    bombs:0
+    bombs: 0,
   });
-  constructor(width, height,bombs) {
+  constructor(width, height) {
     (this.width = width), (this.height = height);
-    this.bombs=bombs
     this.start();
   }
   start() {
-    this.blockState.hasInitBombs=false
+    this.blockState.hasInitBombs = false;
     this.blockState.blocks = Array.from({ length: this.width }, (_, x) =>
       Array.from({ length: this.height }, (_, y) => ({
         y,
@@ -33,7 +32,10 @@ export class GamePlay {
       ) {
         return "";
       }
-      block.isBomb = Math.random() < MINE_RATE;
+      if (Math.random() < MINE_RATE) {
+        block.isBomb = true;
+        this.blockState.bombs = this.blockState.bombs + 1;
+      }
     });
   }
 
@@ -50,7 +52,13 @@ export class GamePlay {
   }
 
   leftClickBlock(block) {
+    if(block.isBomb){
+      this.watchGameState(true)
+      return 
+    }
+
     if (!this.blockState.hasInitBombs) {
+      console.log(this.blockState.hasInitBombs)
       this.generateBombs(block);
       this.generateNumber();
       this.blockState.hasInitBombs = true;
@@ -76,13 +84,20 @@ export class GamePlay {
   rightClickBlock(block) {
     this.blockState.blocks[block.x][block.y].flag = true;
   }
-  watchGameState() {
+  watchGameState(isLose) {
+    if (!this.blockState.hasInitBombs) {
+      return "";
+    }
     const allBlocksArray = [].concat(...this.blockState.blocks);
-    if (allBlocksArray.some((item) => item.isBomb && !item.isCovered)) {
-      alert("lose");
-      allBlocksArray.forEach((item) => {
-        item.isCovered = false;
-      });
+    if (allBlocksArray.every((block) => !block.isCovered || block.flag||isLose)) {
+      if (allBlocksArray.some((block) => block.isBomb)) {
+        alert("lost");
+        allBlocksArray.forEach((item) => {
+          item.isCovered = false;
+        });
+      } else {
+        alert("win");
+      }
     }
   }
 }
